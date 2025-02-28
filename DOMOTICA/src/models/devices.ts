@@ -1,10 +1,11 @@
 export class Device {
-    nome: string = "";
+    name: string = "";
     state: boolean = false;
     color: string = "#f533f2";
+    icon: string = "device";
 }
 
-export class Places{
-    nome: string = "";
+export class Environment{
+    name: string = "";
     devices: Array<Device> = []   
 }

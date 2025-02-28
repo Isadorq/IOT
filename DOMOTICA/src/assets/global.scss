@@ -1,5 +1,6 @@
-@import "reset.scss";
-@import "variables.scss";
+@use "primeflex/primeflex.css";
+@use "reset.scss";
+@use "variables.scss";
 
 #app{
     min-width: 100vw;
