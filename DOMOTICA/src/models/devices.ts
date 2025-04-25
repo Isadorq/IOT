@@ -1,11 +1,92 @@
 export class Device {
+    id: string = "";
     name: string = "";
-    state: boolean = false;
-    color: string = "#f533f2";
+    state: boolean = false;    
     icon: string = "device";
+    pin: number = 0;
 }
 
-export class Environment{
+export class Environment {
+    id: String = "";
     name: string = "";
-    devices: Array<Device> = []   
+    devices: Array<Device> = []
+}
+
+export class EnvironmentResponse {
+    id: String = "";
+    name: string = "";
+    devices: Array<ResponseSys> = []
+}
+
+export class ResponseItem<T> {
+    fields: T|null = null;
+    sys: ResponseSys = new ResponseSys;
+}
+
+export class ResponseSys {
+    id: String = "";
+}
+
+export class EntryResponse<T> {
+    fields: T|null = null;
+    sys: ResponseSys = new ResponseSys;
+}
+
+export class IncludesResponse<T> {
+    Entry: Array<EntryResponse<T>> = [];
+}
+
+export class ApiResponse<T, Y> {
+    items: Array<ResponseItem<T>> = [];
+    sys: ResponseSys = new ResponseSys();
+    includes: IncludesResponse<Y> = new IncludesResponse();
+}
+
+export class ApiAttribute<T> {
+    enUs: T|null = null;
+
+    constructor(initialValue:T){
+        this.enUs = initialValue;
+    }
+}
+
+export class NewDevice {
+    name: ApiAttribute<String> = new ApiAttribute("");
+    icon: ApiAttribute<String> = new ApiAttribute("");    
+    pin: ApiAttribute<Number> = new ApiAttribute(0);    
+}
+
+export class NewField<T> {
+    fields: T|null = null;
+
+    constructor(initialValue:T){
+        this.fields = initialValue;
+    }
+}
+
+export const mapApiResponseToEnvironments = 
+    (apiResponse: ApiResponse<Environment, Device>) : Array<Environment> => {
+
+    const environments= apiResponse.items.map(item=>{
+        if(item.fields){
+            const environment = new Environment();
+            environment.name = item.fields.name;
+            environment.id = item.sys.id;
+            environment.devices = item.fields.devices.map(sysDevice => {
+                    const device = apiResponse.includes.Entry
+                        .find(dev=>dev.sys.id === sysDevice.id);
+
+                    console.log("device map", device);  
+
+                    if(device?.fields){
+                        device.fields.id = sysDevice.id;
+                        return device.fields;
+                    } 
+                    return new Device();
+            });
+            return environment;
+        }
+        return new Environment();
+    })
+    return environments;
 }
