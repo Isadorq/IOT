@@ -7,47 +7,52 @@ export class Device {
 }
 
 export class Environment {
-    id: String = "";
+    id: string = "";
     name: string = "";
     devices: Array<Device> = []
 }
 
 export class EnvironmentResponse {
-    id: String = "";
+    id: string = "";
     name: string = "";
-    devices: Array<ResponseSys> = []
+    devices: Array<Omit<ResponseItem<null>,"fields">> = []
 }
 
 export class ResponseItem<T> {
     fields: T|null = null;
-    sys: ResponseSys = new ResponseSys;
+    sys: ResponseSys = new ResponseSys();
 }
 
 export class ResponseSys {
-    id: String = "";
+    id: string = "";
 }
 
-export class EntryResponse<T> {
+export class EntryResponse<T>{
     fields: T|null = null;
-    sys: ResponseSys = new ResponseSys;
+    sys: ResponseSys = new ResponseSys();
 }
 
 export class IncludesResponse<T> {
     Entry: Array<EntryResponse<T>> = [];
 }
 
-export class ApiResponse<T, Y> {
+export class ApiResponse<T,Y> {
     items: Array<ResponseItem<T>> = [];
     sys: ResponseSys = new ResponseSys();
     includes: IncludesResponse<Y> = new IncludesResponse();
 }
 
 export class ApiAttribute<T> {
-    enUs: T|null = null;
+    pt: T|null = null;
 
     constructor(initialValue:T){
-        this.enUs = initialValue;
+        this.pt = initialValue;
     }
+}
+
+
+export class NewEnvironment {
+    name: ApiAttribute<String> = new ApiAttribute("");    
 }
 
 export class NewDevice {
@@ -65,28 +70,25 @@ export class NewField<T> {
 }
 
 export const mapApiResponseToEnvironments = 
-    (apiResponse: ApiResponse<Environment, Device>) : Array<Environment> => {
-
-    const environments= apiResponse.items.map(item=>{
-        if(item.fields){
+    (apiResponse: ApiResponse<EnvironmentResponse,Device>): Array<Environment> => {
+    const environments = apiResponse.items.map(item=>{
+        if(item.fields){            
             const environment = new Environment();
-            environment.name = item.fields.name;
+            environment.name = item.fields.name;            
             environment.id = item.sys.id;
-            environment.devices = item.fields.devices.map(sysDevice => {
-                    const device = apiResponse.includes.Entry
-                        .find(dev=>dev.sys.id === sysDevice.id);
-
-                    console.log("device map", device);  
-
-                    if(device?.fields){
-                        device.fields.id = sysDevice.id;
-                        return device.fields;
-                    } 
-                    return new Device();
+            environment.devices = item.fields.devices?.map(sysDevice =>{
+                const device = apiResponse.includes.Entry
+                    .find(dev=>dev.sys.id === sysDevice.sys.id);
+                
+                if(device?.fields) {
+                    device.fields.id = sysDevice.sys.id;
+                    return device.fields;
+                }
+                return new Device();                
             });
             return environment;
         }
         return new Environment();
-    })
+    });
     return environments;
 }

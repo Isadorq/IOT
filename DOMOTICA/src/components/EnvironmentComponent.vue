@@ -16,6 +16,7 @@
             <div v-for="(device, dev_id) in props.environment.devices" :key="dev_id">
                 <DeviceComponent :device="device"/>
             </div>
+            <p v-if="!props.environment.devices" class="text-center">Sem Dispositivos!</p>
         </div>
     </section>
 </template>
